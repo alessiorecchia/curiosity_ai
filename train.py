@@ -21,7 +21,7 @@ params = {
     'lambda':0.1,
     'eta': 1.0,
     'gamma':0.2,
-    'max_episode_len':100,
+    # 'max_episode_len':100,
     'min_progress':15,
     'action_repeats':6,
     'frames_per_state':3
@@ -131,7 +131,7 @@ switch_to_eps_greedy = 1000
 state_deque = deque(maxlen=params['frames_per_state'])
 e_reward = 0.
 ############################################################## find the proper way to change this
-last_x_pos = env.player.prev_x
+# last_x_pos = env.player.prev_x
 ##############################################################
 ep_lengths = []
 use_explicit = False
@@ -146,7 +146,7 @@ for i in range(epochs):
     for j in range(params['action_repeats']):
         state2, e_reward_, done, info = env.step(action)
         ##############################################################
-        last_x_pos = info['x_pos']
+        # last_x_pos = info['x_pos']
         ##############################################################
         if done:
             state1 = reset_env()
@@ -158,18 +158,18 @@ for i in range(epochs):
     e_reward = 0
     if episode_length > params['max_episode_len']:
         ##############################################################
-        if (info['x_pos'] - last_x_pos) < params['min_progress']:
+        # if (info['x_pos'] - last_x_pos) < params['min_progress']:
         ##############################################################
             done = True
-        else:
+        # else:
             ##############################################################
-            last_x_pos = info['x_pos']
+            # last_x_pos = info['x_pos']
             ##############################################################
     if done:
         ep_lengths.append(info['x_pos'])
         state1 = reset_env()
         ##############################################################
-        last_x_pos = env.env.env._x_position
+        # last_x_pos = env.env.env._x_position
         ##############################################################
         episode_length = 0
     else:
