@@ -2,6 +2,7 @@ import torch as T
 import torch.nn as nn
 import torch.nn.functional as F
 
+device = T.device("cuda" if T.cuda.is_available() else "cpu")
 
 
 class Encoder(nn.Module):
@@ -13,13 +14,14 @@ class Encoder(nn.Module):
         self.conv4 = nn.Conv2d(32, 32, kernel_size=(3,3), stride=2, padding=1)
  
     def forward(self,x):
+        x = x.to(device)
         x = F.normalize(x)
-        y = F.elu(self.conv1(x))
-        y = F.elu(self.conv2(y))
-        y = F.elu(self.conv3(y))
-        y = F.elu(self.conv4(y)) #size [1, 32, 3, 3] batch, channels, 3 x 3
-        y = y.flatten(start_dim=1) #size N, 288
-        return y
+        x = F.elu(self.conv1(x))
+        x = F.elu(self.conv2(x))
+        x = F.elu(self.conv3(x))
+        x = F.elu(self.conv4(x)) #size [1, 32, 3, 3] batch, channels, 3 x 3
+        x = x.flatten(start_dim=1) #size N, 288
+        return x
  
 class Inverse(nn.Module):
     def __init__(self):
@@ -29,10 +31,11 @@ class Inverse(nn.Module):
  
     def forward(self, state1,state2):
         x = T.cat( (state1, state2) ,dim=1)
-        y = F.relu(self.linear1(x))
-        y = self.linear2(y)
-        y = F.softmax(y,dim=1)
-        return y
+        x = x.to(device)
+        x = F.relu(self.linear1(x))
+        x = self.linear2(x)
+        x = F.softmax(x,dim=1)
+        return x
  
 class Forward(nn.Module):
     def __init__(self):
@@ -41,12 +44,14 @@ class Forward(nn.Module):
         self.linear2 = nn.Linear(256,288)
  
     def forward(self,state,action):
+        state.to(device), action.to(device)
         action_ = T.zeros(action.shape[0],12)
-        indices = T.stack( (T.arange(action.shape[0]), action.squeeze()), dim=0)
+        indices = T.stack((T.arange(action.shape[0]), action.squeeze()), dim=0)
         indices = indices.tolist()
         action_[indices] = 1.
-        x = T.cat( (state,action_) ,dim=1)
-        y = F.relu(self.linear1(x))
-        y = self.linear2(y)
-        return y
+        x = T.cat((state,action_) ,dim=1).to(device)
+        # x = x.to(device)
+        x = F.relu(self.linear1(x))
+        x = self.linear2(x)
+        return x
 

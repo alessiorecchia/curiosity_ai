@@ -15,13 +15,14 @@ class DQN(nn.Module):
         self.bn2 = nn.BatchNorm2d(32)
         self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2, padding=1)
         self.bn3 = nn.BatchNorm2d(32)
-        self.conv4 = nn.Conv2d(32, 32, kernel_size=3, stride=1)
+        self.conv4 = nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1)
         self.bn4 = nn.BatchNorm2d(32)
 
-        convw = self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(w))), kernel_size=3, stride=1)
-        convh = self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(h))), kernel_size=3, stride=1)
+        convw = self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(w))), kernel_size=3, stride=2, padding=1)
+        convh = self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(h))), kernel_size=3, stride=2, padding=1)
 
         linear_input_size = convw * convh * 32
+        self.fc1 = nn.Linear(linear_input_size, linear_input_size)
         self.head = nn.Linear(linear_input_size, outputs)
 
     # Called with either one element to determine next action, or a batch
@@ -33,7 +34,13 @@ class DQN(nn.Module):
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
         x = F.relu(self.bn4(self.conv4(x)))
-        return self.head(x.view(x.size(0), -1))
+        # print(x.shape)
+        x = x.flatten(start_dim=2)
+        x = x.view(x.size(0), -1, 32)
+        # print(x.shape)
+        x = x.flatten(start_dim=1)
+        x = F.relu(self.fc1(x))
+        return self.head(x)
     
     def conv2d_size_out(self, size, kernel_size = 5, stride = 2, padding = 1):
         return (size - kernel_size + 2 * padding) // stride  + 1
