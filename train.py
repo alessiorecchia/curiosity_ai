@@ -33,7 +33,7 @@ params = {
     'lambda':0.1,
     'eta': 1.0,
     'gamma':0.2,
-    'max_episode_len':200,
+    'max_episode_len':3000,
     # 'min_progress':15,
     'action_repeats':6,
     'frames_per_state':3
@@ -149,7 +149,7 @@ def minibatch_train(use_extrinsic=True):
     F.normalize(reward_target.detach()))
     return forward_pred_err, inverse_pred_err, q_loss
 
-episodes = 1
+episodes = 500
 env.reset()
 state1 = prepare_initial_state(env.render('rgb_array'))
 eps=1.
