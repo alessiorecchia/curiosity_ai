@@ -222,7 +222,8 @@ for episode in range(episodes):
             state1 = state2
         if len(replay.memory) < params['batch_size']:
             continue
-        env.render()
+        if HOSTNAME != TARGET_HOST:
+            env.render()
         forward_pred_err, inverse_pred_err, q_loss = minibatch_train(use_extrinsic=use_explicit)
         loss = loss_fn(q_loss, forward_pred_err, inverse_pred_err)
         loss_list = (q_loss.mean(), forward_pred_err.flatten().mean(),\
