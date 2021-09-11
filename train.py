@@ -9,7 +9,7 @@ from skimage.transform import resize
 from collections import deque
 
 
-from curiosity import Encoder, Forward, Inverse
+from curiosity import Encoder_mod, Forward_mod, Inverse_mod
 from memory import MemoryReplay
 from dqn import DQN
 from gameplay import GameField
@@ -34,11 +34,11 @@ n_actions = env.action_space.n
 replay = MemoryReplay(N=1000, batch_size=params['batch_size'])
 model = DQN(42, 42, n_actions)
 model.to(device)
-encoder = Encoder()
+encoder = Encoder_mod()
 encoder.to(device)
-forward_model = Forward()
+forward_model = Forward_mod()
 forward_model.to(device)
-inverse_model = Inverse()
+inverse_model = Inverse_mod()
 inverse_model.to(device)
 forward_loss = nn.MSELoss(reduction='none')
 inverse_loss = nn.CrossEntropyLoss(reduction='none')
@@ -101,7 +101,7 @@ def ICM(state1, action, state2, forward_scale=1., inverse_scale=1e4):
     forward_pred_err = forward_scale * forward_loss(state2_hat_pred,
                        state2_hat.detach()).sum(dim=1).unsqueeze(dim=1)
     pred_action = inverse_model(state1_hat, state2_hat)
-    inverse_pred_err = inverse_scale * inverse_loss(pred_action,
+    inverse_pred_err = inverse_scale * inverse_loss(pred_action,\
                        action.detach().flatten()).unsqueeze(dim=1)
     return forward_pred_err, inverse_pred_err
 
