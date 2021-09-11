@@ -232,9 +232,12 @@ class GameField(Env):
         self.player.prev_x = self.player.x
         self.player.prev_y = self.player.y
 
+        info = {}
+
 
         # Flag that marks the termination of an episode
         done = False
+        reward = 0
         
         # Assert that it is a valid action 
         assert self.action_space.contains(action), "Invalid Action"
@@ -250,73 +253,77 @@ class GameField(Env):
 
         if action == 0:             # move right
             self.player.move(D_MOVE, 0)
-            reward = -4
-            if self.player.picked_flag:
-                if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
-                    reward = 3
-            else:
-                if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
-                    reward = 1
-            if self.wall_collision(self.elements):
-                reward = -10
+            self.wall_collision(self.elements)
+            # reward = -4
+            # if self.player.picked_flag:
+            #     if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
+            #         reward = 3
+            # else:
+            #     if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
+            #         reward = 1
+            # if self.wall_collision(self.elements):
+            #     reward = -10
                             
              
         elif action == 1:           # move left
             self.player.move(-1 * D_MOVE, 0)
-            reward = -4
-            if self.player.picked_flag:
-                if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
-                    reward = 3
-            else:
-                if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
-                    reward = 1
-            if self.wall_collision(self.elements):
-                reward = -10
+            self.wall_collision(self.elements)
+            # reward = -4
+            # if self.player.picked_flag:
+            #     if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
+            #         reward = 3
+            # else:
+            #     if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
+            #         reward = 1
+            # if self.wall_collision(self.elements):
+            #     reward = -10
             
         elif action == 2:           # move down
             self.player.move(0, D_MOVE)
-            reward = -4
-            if self.player.picked_flag:
-                if (self.player.y - self.base.y)**2 < (self.player.prev_y - self.base.y)**2:
-                    reward = 3
-            else:
-                if (self.player.y - self.flag.y)**2 < (self.player.prev_y - self.flag.y)**2:
-                    reward = 1
-            if self.wall_collision(self.elements):
-                reward = -10
+            self.wall_collision(self.elements)
+            # reward = -4
+            # if self.player.picked_flag:
+            #     if (self.player.y - self.base.y)**2 < (self.player.prev_y - self.base.y)**2:
+            #         reward = 3
+            # else:
+            #     if (self.player.y - self.flag.y)**2 < (self.player.prev_y - self.flag.y)**2:
+            #         reward = 1
+            # if self.wall_collision(self.elements):
+            #     reward = -10
              
         elif action == 3:           # move up
             self.player.move(0, -1 * D_MOVE)
-            reward = -4
-            if self.player.picked_flag:
-                if (self.player.y - self.base.y)**2 < (self.player.prev_y - self.base.y)**2:
-                    reward = 3
-            else:
-                if (self.player.y - self.flag.y)**2 < (self.player.prev_y - self.flag.y)**2:
-                    reward = 1
-            if self.wall_collision(self.elements):
-                reward = -10
+            self.wall_collision(self.elements)
+            # reward = -4
+            # if self.player.picked_flag:
+            #     if (self.player.y - self.base.y)**2 < (self.player.prev_y - self.base.y)**2:
+            #         reward = 3
+            # else:
+            #     if (self.player.y - self.flag.y)**2 < (self.player.prev_y - self.flag.y)**2:
+            #         reward = 1
+            # if self.wall_collision(self.elements):
+            #     reward = -10
             
         elif action == 4:           # pickup flag
-            reward = -15
+            # reward = -15
             if self.has_collided(self.player, self.flag):
                 if self.flag in self.elements:
                     self.elements.remove(self.flag)
                     self.player.picked_flag = True
                     reward = 10
                 
-            elif self.wall_collision(self.elements):
-                reward = -10
+            # elif self.wall_collision(self.elements):
+            #     reward = -10
 
         elif action == 5:           # drop flag
-            reward = -15
+            # reward = -15
             if self.has_collided(self.player, self.base):
                 if self.player.picked_flag == True:
                     self.player.flag_dropped = True
                     done = True
-                    reward = 12
-            elif self.wall_collision(self.elements):
-                reward = -10
+                    reward = 20
+            # elif self.wall_collision(self.elements):
+            #     reward = -10
 
 
 
@@ -325,7 +332,7 @@ class GameField(Env):
         self.draw_elements_on_canvas()
 
         # return self.canvas, reward, done, []
-        return self.observation(), reward, done, []
+        return self.observation(), reward, done, info
 
 
 # env = GameField()
