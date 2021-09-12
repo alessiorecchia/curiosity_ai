@@ -78,7 +78,7 @@ class Worker():
             returns.append(ret_)
         returns = T.stack(returns.view(-1))
         returns = F.normalize(returns, dim=0)
-        self.actor_loss = -1*self.log_probs * (returns - self.values.detach())
+        self.actor_loss = -1 * self.log_probs * (returns - self.values.detach())
         self.critic_loss = T.pow(self.values - returns, 2)
         self.loss = self.actor_loss.sum() + self.clc * self.critic_loss.sum()
         self.loss.backward()
