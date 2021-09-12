@@ -28,7 +28,7 @@ logging.basicConfig(filename='logs/training.log',
 
 
 params = {
-    'batch_size':128,
+    'batch_size':64,
     'beta':0.2,
     'lambda':0.1,
     'eta': 1.0,
