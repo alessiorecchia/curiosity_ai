@@ -34,7 +34,7 @@ class GameField(Env):
                         
         # Create a canvas to render the environment images upon 
         self.canvas = np.zeros(self.observation_shape)
-        self.pad = 50
+        self.pad = 70
         
         
         # Define elements present inside the environment
@@ -214,12 +214,16 @@ class GameField(Env):
         return collision
     
     def observation(self):
-        # x, y = self.player.get_position()
-        # pad = self.pad - 1
+        x, y = self.player.get_position()
+        pad = self.pad - 1
         screen = self.canvas
-        # screen = screen[y-pad:y+pad, x-pad:x+pad]
-        screen = cv2.resize(screen, (60, 60), interpolation=cv2.INTER_CUBIC)
-        screen = screen.transpose((2, 0, 1))
+        screen = np.float32(screen)
+        # print(screen.shape)
+        screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+        # print(screen.shape)
+        screen = screen[y-pad:y+pad, x-pad:x+pad]
+        screen = cv2.resize(screen, (50, 50), interpolation=cv2.INTER_CUBIC)
+        # screen = screen.transpose((2, 0, 1))
         return screen / 255
 
     
@@ -337,8 +341,10 @@ class GameField(Env):
 
 # env = GameField()
 # print(env.x_min, env.x_max, env.y_min, env.y_max)
-# obs = env.reset()
+# env.reset()
 
+# obs = env.observation()
+# # obs = obs.transpose(1, 2, 0)
 
 
 # plt.imshow(obs)
