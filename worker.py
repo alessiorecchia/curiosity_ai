@@ -18,7 +18,7 @@ logging.basicConfig(filename='logs/training.log',
                         level=logging.INFO)
 
 HOSTNAME = gethostname()
-TARGET_HOST = 'matrix'
+TARGET_HOST = 'bridgestone'
 
 class Worker():
     def __init__(self, ac_model, env, params) -> None:
