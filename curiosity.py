@@ -28,8 +28,8 @@ class Encoder_mod(nn.Module):
 class Inverse_mod(nn.Module):
     def __init__(self, n_actions):
         super(Inverse_mod, self).__init__()
-        self.linear1 = nn.Linear(576,256)
-        self.linear2 = nn.Linear(256,n_actions)
+        self.linear1 = nn.Linear(256,128)
+        self.linear2 = nn.Linear(128,n_actions)
  
     def forward(self, state1,state2):
         state1= state1.to(device)
@@ -44,8 +44,8 @@ class Forward_mod(nn.Module):
     def __init__(self, n_actions):
         super(Forward_mod, self).__init__()
         self.n_action = n_actions
-        self.linear1 = nn.Linear(294,256)
-        self.linear2 = nn.Linear(256,288)
+        self.linear1 = nn.Linear(134,128)
+        self.linear2 = nn.Linear(128,128)
  
     def forward(self,state,action):
         state = state.to(device)

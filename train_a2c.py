@@ -32,7 +32,7 @@ env = GameField()
 env.reset()
 obs = env.observation()
 input_size = np.prod(obs.shape)
-hidden_size = 256
+hidden_size = 128
 n_actions = env.action_space.n
 
 
@@ -40,7 +40,7 @@ MAX_WORKERS = mp.cpu_count()
 if HOST == TARGET_HOST:
     n_workers = 8
 else:
-    n_workers = 1
+    n_workers = 2
 
 
 
@@ -62,7 +62,7 @@ icm = ICM(encoder, fw_model, fw_criterion, inv_model, inv_criterion)
 
 processes = []
 params = {
-    'episodes': 5,
+    'episodes': 501,
     'gamma': 0.95,
     'n_steps': 5,
     'clc': 0.1,
@@ -89,6 +89,6 @@ if __name__ == '__main__':
         p.terminate()
     
     if HOST != TARGET_HOST:
-        print(counter.value,processes[1].exitcode)
+        print(counter.value,processes[0].exitcode)
     else:
-        logger.info(counter.value,processes[1].exitcode)
+        logger.info(counter.value,processes[0].exitcode)
