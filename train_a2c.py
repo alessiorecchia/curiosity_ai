@@ -13,9 +13,12 @@ from worker import Worker
 from gameplay import GameField
 from actor_critic import ActorCritic
 
+from socket import gethostname
+
 # print(mp.cpu_count())
 
 device = T.device("cuda" if T.cuda.is_available() else "cpu")
+HOST = gethostname()
 
 try:
     mp.set_start_method('spawn')
@@ -31,7 +34,10 @@ n_actions = env.action_space.n
 
 
 MAX_WORKERS = mp.cpu_count()
-n_workers = 2
+if HOST == 'bridgestone':
+    n_workers = 6
+else:
+    n_workers = 2
 
 
 
