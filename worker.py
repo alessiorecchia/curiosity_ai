@@ -6,6 +6,20 @@ from torch import nn
 from torch import optim
 from torch.nn import functional as F
 
+import logging
+from time import time
+from socket import gethostname
+
+logger = logging.getLogger('Curiosity AI')
+logging.basicConfig(filename='logs/training.log',
+                        filemode='a',
+                        format='%(asctime)s | %(message)s',
+                        datefmt='%H:%M:%S',
+                        level=logging.INFO)
+
+HOSTNAME = gethostname()
+TARGET_HOST = 'matrix'
+
 class Worker():
     def __init__(self, ac_model, env, params) -> None:
         # kwargs = kwargs['kwargs']
@@ -16,23 +30,31 @@ class Worker():
         self.n_steps = params['n_steps']
         self.gamma = params['gamma']
         self.clc = params['clc']
-        self.optimizer = optim.Adam(self.ac_model.parameters(), lr=1e-4)
+        self.ac_optimizer = optim.Adam(self.ac_model.parameters(), lr=1e-4)
     
     def run_worker(self, t, counter):
         # self.counter = counter
         self.t = t
         for i in range(self.episodes):
             steps = 0
+            episode_start = time()
             self.done = False
             self.env.reset()
+            self.ac_optimizer.zero_grad()
             while not self.done and steps < self.max_ep_steps:
-                self.optimizer.zero_grad()
+                self.ac_optimizer.zero_grad()
                 self.values, self.log_probs, self.rewards, self.R = self.run_episode()
                 self.actor_loss, self.critic_loss, self.ep_len = self.update_parameters()
                 steps += 1
                 counter.value +=1
-                self.env.render()
-            print(f'Episode {i} done | Loss: {self.loss}')
+                if HOSTNAME != TARGET_HOST:
+                    self.env.render()
+            if HOSTNAME != TARGET_HOST:
+                print(f'Episode: {i} | Episode lenght: {steps} | Time elapsed: {time() - episode_start} | Loss: {self.loss}')
+            else:
+                logger.info(f'Episode: {i} | Episode lenght: {steps} | Time elapsed: {time() - episode_start} | Loss: {self.loss}')
+            if i % 50 == 0:
+                T.save(self.ac_model.state_dict(), f'models/ac_model_checkpoint_{i}')
         print('Training done!')
 
     def run_episode(self):
@@ -74,6 +96,6 @@ class Worker():
         self.critic_loss = T.pow(self.values - returns, 2)
         self.loss = self.actor_loss.sum() + self.clc * self.critic_loss.sum()
         self.loss.backward()
-        self.optimizer.step()
+        self.ac_optimizer.step()
         # print('Update done')
         return self.actor_loss, self.critic_loss, len(self.rewards)

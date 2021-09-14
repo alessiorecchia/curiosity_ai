@@ -27,35 +27,29 @@ class ActorCritic(nn.Module):
         self.fc2 = nn.Linear(2 * self.hidden_size, self.hidden_size)
         self.att = nn.Linear(self.hidden_size, n_actions)
         # self.act = nn.Linear(self.hidden_size, n_actions)
+        self.pre_val = nn.Linear(self.hidden_size, self.hidden_size)
         self.val = nn.Linear(self.hidden_size, 1)
 
     def forward(self, state):
         state = T.from_numpy(state).flatten().unsqueeze(0).unsqueeze(0).float().to(device)
-        # h0 = Variable(T.zeros(self.num_layers, state.shape[0], self.hidden_size), requires_grad = True)
-        # c0 = Variable(T.zeros(self.num_layers, state.shape[0], self.hidden_size), requires_grad = True)
         h0 = Variable(T.rand(self.num_layers, state.shape[0], self.hidden_size), requires_grad = True)
         c0 = Variable(T.rand(self.num_layers, state.shape[0], self.hidden_size), requires_grad = True)
         out, (hn, cn) = self.rnn(state.to(device), (h0.to(device), c0.to(device)))
 
-        last_hidden = hn#[-1]
-
-        hidden_out = F.relu(last_hidden)
+        hidden_out = hn#[-1]
 
         x = F.relu(self.fc1(hidden_out))
         x = F.relu(self.fc2(x))
 
         scores = F.relu(self.att(x))
-
         scores = scores[-1].squeeze()
-        
 
         probs = F.softmax(scores, dim=0)
 
+        val = F.relu(self.pre_val(hidden_out.detach()))
         val = self.val(hidden_out[-1])
 
         index = T.multinomial(probs, 1)
-
-        # print(index)
 
         return index, scores, val
 

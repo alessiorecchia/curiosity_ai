@@ -222,7 +222,7 @@ class GameField(Env):
         screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
         # print(screen.shape)
         screen = screen[y-pad:y+pad, x-pad:x+pad]
-        screen = cv2.resize(screen, (50, 50), interpolation=cv2.INTER_CUBIC)
+        screen = cv2.resize(screen, (42, 42), interpolation=cv2.INTER_CUBIC)
         # screen = screen.transpose((2, 0, 1))
         return screen / 255
 
@@ -316,8 +316,8 @@ class GameField(Env):
                     self.player.picked_flag = True
                     reward = 10
                 
-            # elif self.wall_collision(self.elements):
-            #     reward = -10
+            elif self.wall_collision(self.elements):
+                reward = -10
 
         elif action == 5:           # drop flag
             # reward = -15
@@ -326,8 +326,8 @@ class GameField(Env):
                     self.player.flag_dropped = True
                     done = True
                     reward = 20
-            # elif self.wall_collision(self.elements):
-            #     reward = -10
+            elif self.wall_collision(self.elements):
+                reward = -10
 
 
 

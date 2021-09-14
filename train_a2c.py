@@ -31,8 +31,7 @@ n_actions = env.action_space.n
 
 
 MAX_WORKERS = mp.cpu_count()
-n_workers = MAX_WORKERS - 11
-
+n_workers = 2
 
 
 
@@ -43,11 +42,11 @@ model.share_memory()
 
 processes = []
 params = {
-    'episodes': 5,
+    'episodes': 1001,
     'gamma': 0.95,
     'n_steps': 5,
     'clc': 0.1,
-    'max_steps': 100
+    'max_steps': 2500
 }
 worker = Worker(ac_model=model, env=env, params=params)
 # worker.run_worker()
