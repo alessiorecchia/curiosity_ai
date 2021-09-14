@@ -141,12 +141,10 @@ def minibatch_train(use_extrinsic=True):
     reward += params['gamma'] * T.max(qvals)
     reward_pred = model(state1_batch)
     reward_target = reward_pred.clone()
-    indices = T.stack( (T.arange(action_batch.shape[0]), \
-    action_batch.squeeze()), dim=0)
+    indices = T.stack( (T.arange(action_batch.shape[0]), action_batch.squeeze()), dim=0)
     indices = indices.tolist()
     reward_target[indices] = reward.squeeze()
-    q_loss = 1e5 * qloss(F.normalize(reward_pred), \
-    F.normalize(reward_target.detach()))
+    q_loss = 1e5 * qloss(F.normalize(reward_pred), F.normalize(reward_target.detach()))
     return forward_pred_err, inverse_pred_err, q_loss
 
 episodes = 500

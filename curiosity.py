@@ -15,8 +15,9 @@ class Encoder_mod(nn.Module):
         self.conv4 = nn.Conv2d(32, 32, kernel_size=(3,3), stride=2, padding=1)
  
     def forward(self,x):
+        x = T.from_numpy(x).unsqueeze(0).unsqueeze(0)
         x = x.to(device)
-        x = F.normalize(x)
+        # x = F.normalize(x)
         x = F.elu(self.conv1(x))
         x = F.elu(self.conv2(x))
         x = F.elu(self.conv3(x))
@@ -43,24 +44,50 @@ class Forward_mod(nn.Module):
     def __init__(self, n_actions):
         super(Forward_mod, self).__init__()
         self.n_action = n_actions
-        self.linear1 = nn.Linear(300,256)
+        self.linear1 = nn.Linear(294,256)
         self.linear2 = nn.Linear(256,288)
  
     def forward(self,state,action):
         state = state.to(device)
         action = action.to(device)
-        action_ = T.zeros(action.shape[0],self.n_action)
+        action_ = T.zeros(1,self.n_action)
         action_ = action_.to(device)
-        indices = T.stack((T.arange(action.shape[0], device=device), action.squeeze()), dim=0)
+        indices = T.stack((T.arange(1, device=device), action), dim=0)
         indices = indices.tolist()
         action_[indices] = 1.
-        x = T.cat((state,action_) ,dim=1)
+        x = T.cat((state, action_) ,dim=1)
         x = F.relu(self.linear1(x))
         x = self.linear2(x)
         return x
 
+class ICM():
+    def __init__(self, encoder, forward_model, forward_criterion, inverse_model, inverse_criterion,
+                forward_scale = 1., inverse_scale=1e4) -> None:
+        self. encoder = encoder
+        self.forward_model = forward_model
+        self.forward_criterion = forward_criterion
+        self.inverse_model = inverse_model
+        self.inverse_criterion = inverse_criterion
+        self.forward_scale = forward_scale
+        self.inverse_scale = inverse_scale
+    
+    def predict(self,action, state1, state2):
 
+        self.action = action
+        self.state1 = state1
+        self.state2 = state2
 
+        state1_hat = self.encoder(self.state1)
+        state2_hat = self.encoder(self.state2)
+        state2_hat_pred = self.forward_model(state1_hat.detach(), self.action.detach())
+        self.forward_loss = self.forward_criterion(state2_hat_pred,state2_hat.detach()).sum(dim=1).unsqueeze(dim=1)
+        forward_pred_err = self.forward_scale * self.forward_loss
+        pred_action = self.inverse_model(state1_hat, state2_hat)
+        self.inverse_loss = self.inverse_criterion(pred_action, self.action.detach().flatten()).unsqueeze(dim=1)
+        inverse_pred_err = self.inverse_scale * self.inverse_loss
+        return forward_pred_err, inverse_pred_err
+    
+'''self.
 def ICM(state1, action, state2, forward_scale=1., inverse_scale=1e4):
 
     action = action.to(device)
@@ -90,13 +117,26 @@ def minibatch_train(use_extrinsic=True):
     reward += params['gamma'] * T.max(qvals)
     reward_pred = model(state1_batch)
     reward_target = reward_pred.clone()
-    indices = T.stack( (T.arange(action_batch.shape[0]), \
-    action_batch.squeeze()), dim=0)
+    indices = T.stack( (T.arange(action_batch.shape[0]), action_batch.squeeze()), dim=0)
     indices = indices.tolist()
     reward_target[indices] = reward.squeeze()
-    q_loss = 1e5 * qloss(F.normalize(reward_pred), \
-    F.normalize(reward_target.detach()))
+    q_loss = 1e5 * qloss(F.normalize(reward_pred), F.normalize(reward_target.detach()))
     return forward_pred_err, inverse_pred_err, q_loss
+
+def loss_fn(q_loss, inverse_loss, forward_loss):
+    loss_ = (1 - params['beta']) * inverse_loss
+    loss_ += params['beta'] * forward_loss
+    loss_ = loss_.sum() / loss_.flatten().shape[0]
+    loss = loss_ + params['lambda'] * q_loss
+    return loss
+
+forward_pred_err, inverse_pred_err, q_loss = minibatch_train(use_extrinsic=use_explicit)
+        loss = loss_fn(q_loss, forward_pred_err, inverse_pred_err)
+        loss_list = (q_loss.mean(), forward_pred_err.flatten().mean(),\
+                        inverse_pred_err.flatten().mean())
+        losses.append(loss_list)
+        loss.backward()
+        optimizer.step()
 
 encoder = Encoder_mod()
 encoder.to(device)
@@ -106,3 +146,5 @@ inverse_model = Inverse_mod()
 inverse_model.to(device)
 forward_loss = nn.MSELoss(reduction='none')
 inverse_loss = nn.CrossEntropyLoss(reduction='none')
+
+'''

@@ -13,7 +13,7 @@ import socket
 
 font = cv2.FONT_HERSHEY_COMPLEX_SMALL
 
-N_OBS = 16
+N_OBS = 32
 # MIN_CONT_OBS = 2
 # MAX_CONT_OBS = 5
 D_MOVE = 3
@@ -110,9 +110,10 @@ class GameField(Env):
         for i in range(N_OBS):
             obstacle = Obstacle(f'obstacle_{self.obs_count}', self.x_max, self.x_min, self.y_max, self.y_min)
             self.obs_count += 1
+            boundary = 20
 
-            obs_x = random.randrange(self.x_min + 60, self.x_max - 60)
-            obs_y = random.randrange(self.y_min + 60, self.y_max - 60)
+            obs_x = random.randrange(self.x_min + boundary, self.x_max - boundary)
+            obs_y = random.randrange(self.y_min + boundary, self.y_max - boundary)
 
             obstacle.set_position(obs_x, obs_y)
             self.elements.append(obstacle)
@@ -258,13 +259,13 @@ class GameField(Env):
         if action == 0:             # move right
             self.player.move(D_MOVE, 0)
             self.wall_collision(self.elements)
-            # reward = -4
+            # reward = -2
             # if self.player.picked_flag:
             #     if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
-            #         reward = 3
+            #         reward = -1
             # else:
             #     if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
-            #         reward = 1
+            #         reward = -1
             # if self.wall_collision(self.elements):
             #     reward = -10
                             
@@ -272,39 +273,39 @@ class GameField(Env):
         elif action == 1:           # move left
             self.player.move(-1 * D_MOVE, 0)
             self.wall_collision(self.elements)
-            # reward = -4
+            # reward = -2
             # if self.player.picked_flag:
             #     if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
-            #         reward = 3
+            #         reward = -1
             # else:
             #     if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
-            #         reward = 1
+            #         reward = -1
             # if self.wall_collision(self.elements):
             #     reward = -10
             
         elif action == 2:           # move down
             self.player.move(0, D_MOVE)
             self.wall_collision(self.elements)
-            # reward = -4
+            # reward = -2
             # if self.player.picked_flag:
             #     if (self.player.y - self.base.y)**2 < (self.player.prev_y - self.base.y)**2:
-            #         reward = 3
+            #         reward = -1
             # else:
             #     if (self.player.y - self.flag.y)**2 < (self.player.prev_y - self.flag.y)**2:
-            #         reward = 1
+            #         reward = -1
             # if self.wall_collision(self.elements):
             #     reward = -10
              
         elif action == 3:           # move up
             self.player.move(0, -1 * D_MOVE)
             self.wall_collision(self.elements)
-            # reward = -4
+            # reward = -2
             # if self.player.picked_flag:
             #     if (self.player.y - self.base.y)**2 < (self.player.prev_y - self.base.y)**2:
-            #         reward = 3
+            #         reward = -1
             # else:
             #     if (self.player.y - self.flag.y)**2 < (self.player.prev_y - self.flag.y)**2:
-            #         reward = 1
+            #         reward = -1
             # if self.wall_collision(self.elements):
             #     reward = -10
             
@@ -314,10 +315,10 @@ class GameField(Env):
                 if self.flag in self.elements:
                     self.elements.remove(self.flag)
                     self.player.picked_flag = True
-                    reward = 10
+                    reward = 20
                 
-            elif self.wall_collision(self.elements):
-                reward = -10
+            # elif self.wall_collision(self.elements):
+            #     reward = -10
 
         elif action == 5:           # drop flag
             # reward = -15
@@ -325,9 +326,9 @@ class GameField(Env):
                 if self.player.picked_flag == True:
                     self.player.flag_dropped = True
                     done = True
-                    reward = 20
-            elif self.wall_collision(self.elements):
-                reward = -10
+                    reward = 30
+            # elif self.wall_collision(self.elements):
+            #     reward = -10
 
 
 
