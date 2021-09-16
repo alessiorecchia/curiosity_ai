@@ -22,6 +22,9 @@ HOSTNAME = socket.gethostname()
 class GameField(Env):
     def __init__(self):
         super(GameField, self).__init__()
+
+        self.render_info = None
+        self.footer_info = None
         
         # Define a 2-D observation space
         self.observation_shape = (500, 500, 3)
@@ -47,7 +50,7 @@ class GameField(Env):
         self.y_max = int ((self.observation_shape[0] - 2 * self.pad) * 0.95 + self.pad)
         self.x_max = int ((self.observation_shape[1] - 2 * self.pad) * 0.95 + self.pad)
 
-    def draw_elements_on_canvas(self):
+    def draw_elements_on_canvas(self, render_info=None, footer_info=None):
         # Init the canvas 
         self.canvas = np.zeros(self.observation_shape)
         cv2.rectangle(self.canvas, (self.pad, self.pad),
@@ -81,12 +84,13 @@ class GameField(Env):
 
             
         ##############################################################################################################
-
-        # text = 'Lifes Left: {} | Rewards: {}'.format(lifes, self.ep_return)
-
-        # Put the info on canvas 
-        # self.canvas = cv2.putText(self.canvas, text, (10,20), font,  
-        #         0.8, (0,0,0), 1, cv2.LINE_AA)
+        if render_info:
+            text = 'Episode: {} | steps: {} | Action: {}'.format(render_info[0], render_info[1], render_info[2])
+            self.canvas = cv2.putText(self.canvas, text, (10,20), font, 0.8, (255, 255, 255), 1, cv2.LINE_AA)
+        
+        if footer_info:
+            footer = f'FW Loss: {footer_info[0]:.2f} | Reward: {footer_info[1]:.2f} | Advantage'
+            self.canvas = cv2.putText(self.canvas, footer, (10,490), font, 0.8, (255, 255, 255), 1, cv2.LINE_AA)
     
     def reset(self):
 
@@ -151,7 +155,7 @@ class GameField(Env):
         self.canvas = np.ones(self.observation_shape) * 1
 
         # Draw elements on the canvas
-        self.draw_elements_on_canvas()
+        self.draw_elements_on_canvas(self.render_info, self.footer_info)
 
         # return the observation
         return self.canvas
@@ -160,6 +164,16 @@ class GameField(Env):
         assert mode in ["human", "rgb_array"], "Invalid mode, must be either \"human\" or \"rgb_array\""
         if mode == "human":
             cv2.imshow("Game", self.canvas)
+            cv2.waitKey(1)
+        
+        elif mode == "rgb_array":
+            return self.canvas
+
+    def render_obs(self, mode = "human"):
+        assert mode in ["human", "rgb_array"], "Invalid mode, must be either \"human\" or \"rgb_array\""
+        if mode == "human":
+            frame = self.observation()
+            cv2.imshow("obs", frame)
             cv2.waitKey(1)
         
         elif mode == "rgb_array":
@@ -260,12 +274,12 @@ class GameField(Env):
             self.player.move(D_MOVE, 0)
             self.wall_collision(self.elements)
             # reward = -2
-            # if self.player.picked_flag:
-            #     if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
-            #         reward = -1
-            # else:
-            #     if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
-            #         reward = -1
+            if self.player.picked_flag:
+                if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
+                    reward = -1
+            else:
+                if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
+                    reward = -1
             # if self.wall_collision(self.elements):
             #     reward = -10
                             
@@ -310,23 +324,25 @@ class GameField(Env):
             #     reward = -10
             
         elif action == 4:           # pickup flag
-            # reward = -15
             if self.has_collided(self.player, self.flag):
                 if self.flag in self.elements:
                     self.elements.remove(self.flag)
                     self.player.picked_flag = True
                     reward = 20
+            # else:
+            #     reward = -15
                 
             # elif self.wall_collision(self.elements):
             #     reward = -10
 
         elif action == 5:           # drop flag
-            # reward = -15
             if self.has_collided(self.player, self.base):
                 if self.player.picked_flag == True:
                     self.player.flag_dropped = True
                     done = True
                     reward = 30
+            # else:
+                # reward = -15
             # elif self.wall_collision(self.elements):
             #     reward = -10
 
@@ -334,7 +350,7 @@ class GameField(Env):
 
 
         # Draw elements on the canvas
-        self.draw_elements_on_canvas()
+        self.draw_elements_on_canvas(self.render_info, self.footer_info)
 
         # return self.canvas, reward, done, []
         return self.observation(), reward, done, info

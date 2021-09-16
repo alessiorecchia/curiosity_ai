@@ -58,7 +58,7 @@ class SamFisher(Point):
     
 class Obstacle(Point):
     def __init__(self, name, x_max, x_min, y_max, y_min):
-        super(Obstacle, self).__init__(name, x_max, x_min, y_max, y_min)
+        super(Obstacle, self).__init__(name, x_max - 30, x_min + 30, y_max, y_min)
         self.dim = 16
         self.color = (0, 0, 0)
     
