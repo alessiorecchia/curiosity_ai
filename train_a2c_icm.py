@@ -178,6 +178,9 @@ if __name__ == '__main__':
                     AC Loss: {ac_loss.item()} \n \
                     FW Loss: {forward_pred_err.item()} \n \
                     Inv Loss: {inverse_pred_err.item()}')
+        if episode % 50 == 0:
+                T.save(ac_model.state_dict(), f'models/ac_model_checkpoint_{i}')
+                T.save(icm.state_dict(), f'models/icm_checkpoint_{i}')
         
         env.reset()
     
