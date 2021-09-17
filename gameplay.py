@@ -274,12 +274,12 @@ class GameField(Env):
             self.player.move(D_MOVE, 0)
             self.wall_collision(self.elements)
             # reward = -2
-            if self.player.picked_flag:
-                if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
-                    reward = -1
-            else:
-                if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
-                    reward = -1
+            # if self.player.picked_flag:
+            #     if (self.player.x - self.base.x)**2 < (self.player.prev_x - self.base.x)**2:
+            #         reward = -1
+            # else:
+            #     if (self.player.x - self.flag.x)**2 < (self.player.prev_x - self.flag.x)**2:
+            #         reward = -1
             # if self.wall_collision(self.elements):
             #     reward = -10
                             

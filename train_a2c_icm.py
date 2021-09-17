@@ -28,6 +28,7 @@ device = T.device("cuda" if T.cuda.is_available() else "cpu")
 
 HOST = gethostname()
 TARGET_HOST = 'bridgestone'
+# TARGET_HOST = 'matrix'
 MODE = 'rgb_array' if HOST == TARGET_HOST else 'human'
 
 logger = logging.getLogger('Curiosity AI')
@@ -163,13 +164,7 @@ if __name__ == '__main__':
                 out.release()
 ############################## code for record an episode video ########################################################
 
-            logger.info(f'Episode {episode} | \
-                        Episode lenght: {steps} | \
-                        Time elapsed: {int(time() - episode_start)} | \
-                        Loss: {loss.item()} | \
-                        AC Loss: {ac_loss.item()} | \
-                        FW Loss: {forward_pred_err.item()} | \
-                        Inv Loss: {inverse_pred_err.item()}')
+            logger.info(f'Episode {episode} |  Episode lenght: {steps} | Time elapsed: {int(time() - episode_start)} | Loss: {loss.item()} | AC Loss: {ac_loss.item()} | FW Loss: {forward_pred_err.item()} | Inv Loss: {inverse_pred_err.item()}')
         else:
             print(f'Episode {episode} \n \
                     Episode lenght: {steps} \n \
