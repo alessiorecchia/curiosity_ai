@@ -101,7 +101,7 @@ if __name__ == '__main__':
         if HOST == TARGET_HOST and record_video:
             size = env.observation_shape
             fps = 120
-            out = cv2.VideoWriter(f'{episode}_output.avi', cv2.VideoWriter_fourcc(*'X264'), fps, (size[0], size[1]))
+            out = cv2.VideoWriter(f'video/{episode}_output.avi', cv2.VideoWriter_fourcc(*'X264'), fps, (size[0], size[1]))
 ############################## code for record an episode video ########################################################
 
         while not done and steps <= params['max_steps']:
