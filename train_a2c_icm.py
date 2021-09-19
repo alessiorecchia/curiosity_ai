@@ -96,6 +96,8 @@ if __name__ == '__main__':
         steps = 0
         done = 0
         record_video = episode % REC_INTERVAL == 0
+        if params['load_last']:
+            params['load_last'] = False
 
 ############################## code for record an episode video ########################################################
         if HOST == TARGET_HOST and record_video:
