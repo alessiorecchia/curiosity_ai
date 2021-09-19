@@ -11,51 +11,25 @@ import array
 import cv2
 
 from torch import optim
+from torch.optim.lr_scheduler import ExponentialLR
 from time import time
 
 from gameplay import GameField
 from actor_critic import ActorCritic
 from curiosity import ICM
 
-from socket import gethostname
+
 import logging
+import sys
+from socket import gethostname
+from glob import glob
 
 # print(mp.cpu_count())
 
-
-
 device = T.device("cuda" if T.cuda.is_available() else "cpu")
 
-HOST = gethostname()
-TARGET_HOST = 'bridgestone'
-# TARGET_HOST = 'matrix'
-MODE = 'rgb_array' if HOST == TARGET_HOST else 'human'
-
-logger = logging.getLogger('Curiosity AI')
-logging.basicConfig(filename='logs/training.log',
-                        filemode='a',
-                        format='%(asctime)s | %(message)s',
-                        datefmt='%H:%M:%S',
-                        level=logging.INFO)
-
-env = GameField()
-env.reset()
-action_dict = env.get_action_meanings()
-obs = env.observation()
-
-input_size = np.prod(obs.shape)
-hidden_size = 128
-n_actions = env.action_space.n
-
-icm_in_shape = np.expand_dims(obs, axis=0).shape
-
-ac_model = ActorCritic(input_size=input_size, hidden_size=hidden_size, num_layers=n_actions, n_actions=n_actions)
-ac_model.to(device)
-optimizer = optim.Adam(ac_model.parameters(), lr=3e-4)
-icm = ICM(icm_in_shape, n_actions, forward_scale=1., inverse_scale=1)
-icm.to(device)
-
 params = {
+    'load_last': False,
     'episodes': 500,
     'n_steps': 10,
     'clc': 0.1,
@@ -67,6 +41,53 @@ params = {
     'lambda_' : 0.2 # scales AC loss in total loss
 }
 
+try:
+    TARGET_HOST = sys.argv[1]
+except:
+    TARGET_HOST = 'bridgestone'
+
+HOST = gethostname()
+MODE = 'rgb_array' if HOST == TARGET_HOST else 'human'
+MODEL_PATH = 'models/'
+REC_INTERVAL = 10
+SAVE_INTERVAL = 10
+
+logger = logging.getLogger('Curiosity AI')
+logging.basicConfig(filename='logs/training.log',
+                        filemode='a',
+                        format='%(asctime)s | %(message)s',
+                        datefmt='%H:%M:%S',
+                        level=logging.INFO)
+
+
+def get_latest_checkpoint():
+    cp_list = glob(MODEL_PATH + '*')
+    latest_file = max(cp_list, key=os.path.getctime)
+    return latest_file.split('_')[-1]
+
+env = GameField()
+env.reset()
+action_dict = env.get_action_meanings()
+obs = env.observation()
+
+input_size = np.prod(obs.shape)
+hidden_size = 128
+n_actions = env.action_space.n
+icm_in_shape = np.expand_dims(obs, axis=0).shape
+
+ac_model = ActorCritic(input_size=input_size, hidden_size=hidden_size, num_layers=n_actions, n_actions=n_actions)
+icm = ICM(icm_in_shape, n_actions, forward_scale=1., inverse_scale=1)
+
+if params['load_last']:
+    last = get_latest_checkpoint()
+    ac_model.load_state_dict(T.load(MODEL_PATH + f'ac_model_checkpoint_{last}'))
+    icm.load_state_dict(T.load(MODEL_PATH + f'icm_checkpoint_{last}'))
+
+ac_model.to(device)
+icm.to(device)
+
+optimizer = optim.Adam(ac_model.parameters(), lr=3e-3)
+scheduler = ExponentialLR(optimizer, 0.95)
 
 if __name__ == '__main__':
     for episode in range(params['episodes']):
@@ -74,7 +95,7 @@ if __name__ == '__main__':
         episode_start = time()
         steps = 0
         done = 0
-        record_video = episode % 10 == 0
+        record_video = episode % REC_INTERVAL == 0
 
 ############################## code for record an episode video ########################################################
         if HOST == TARGET_HOST and record_video:
@@ -173,7 +194,7 @@ if __name__ == '__main__':
                     AC Loss: {ac_loss.item()} \n \
                     FW Loss: {forward_pred_err.item()} \n \
                     Inv Loss: {inverse_pred_err.item()}')
-        if episode % 50 == 0:
+        if episode % SAVE_INTERVAL == 0:
                 T.save(ac_model.state_dict(), f'models/ac_model_checkpoint_{i}')
                 T.save(icm.state_dict(), f'models/icm_checkpoint_{i}')
         

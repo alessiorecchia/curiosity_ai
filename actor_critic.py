@@ -26,7 +26,6 @@ class ActorCritic(nn.Module):
         self.fc1 = nn.Linear(self.hidden_size, 2 * self.hidden_size)
         self.fc2 = nn.Linear(2 * self.hidden_size, self.hidden_size)
         self.att = nn.Linear(self.hidden_size, n_actions)
-        # self.act = nn.Linear(self.hidden_size, n_actions)
         self.pre_val = nn.Linear(self.hidden_size, self.hidden_size)
         self.val = nn.Linear(self.hidden_size, 1)
 
@@ -47,7 +46,7 @@ class ActorCritic(nn.Module):
         probs = F.softmax(scores, dim=0)
 
         val = F.relu(self.pre_val(hidden_out.detach()))
-        val = self.val(hidden_out[-1])
+        val = self.val(val[-1])
 
         index = T.multinomial(probs, 1)
 

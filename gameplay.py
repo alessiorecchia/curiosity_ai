@@ -27,16 +27,17 @@ class GameField(Env):
         self.footer_info = None
         
         # Define a 2-D observation space
-        self.observation_shape = (500, 500, 3)
-        self.observation_space = spaces.Box(low = np.zeros(self.observation_shape), 
-                                            high = np.ones(self.observation_shape),
+        self.observation_shape = (1, 21, 21)
+        self.env_shape = (500, 500, 3)
+        self.observation_space = spaces.Box(low = np.zeros(self.env_shape), 
+                                            high = np.ones(self.env_shape),
                                             dtype = np.float16)
     
         # Define an action space ranging from 0 to 5
         self.action_space = spaces.Discrete(6,)
                         
         # Create a canvas to render the environment images upon 
-        self.canvas = np.zeros(self.observation_shape)
+        self.canvas = np.zeros(self.env_shape)
         self.pad = 70
         
         
@@ -44,17 +45,17 @@ class GameField(Env):
         self.elements = []
 
         # Permissible area of sam_fisher to be 
-        # self.y_min = int (self.observation_shape[0] * 0.05)
-        self.y_min = int ((self.observation_shape[0] - 2 * self.pad) * 0.05 + self.pad)
-        self.x_min = int ((self.observation_shape[1] - 2 * self.pad) * 0.05 + self.pad)
-        self.y_max = int ((self.observation_shape[0] - 2 * self.pad) * 0.95 + self.pad)
-        self.x_max = int ((self.observation_shape[1] - 2 * self.pad) * 0.95 + self.pad)
+        # self.y_min = int (self.env_shape[0] * 0.05)
+        self.y_min = int ((self.env_shape[0] - 2 * self.pad) * 0.05 + self.pad)
+        self.x_min = int ((self.env_shape[1] - 2 * self.pad) * 0.05 + self.pad)
+        self.y_max = int ((self.env_shape[0] - 2 * self.pad) * 0.95 + self.pad)
+        self.x_max = int ((self.env_shape[1] - 2 * self.pad) * 0.95 + self.pad)
 
     def draw_elements_on_canvas(self, render_info=None, footer_info=None):
         # Init the canvas 
-        self.canvas = np.zeros(self.observation_shape)
+        self.canvas = np.zeros(self.env_shape)
         cv2.rectangle(self.canvas, (self.pad, self.pad),
-                     (self.observation_shape[1]-self.pad, self.observation_shape[0]-self.pad),
+                     (self.env_shape[1]-self.pad, self.env_shape[0]-self.pad),
                      (255, 255, 255), -1)
 
         lifes = 0
@@ -152,7 +153,7 @@ class GameField(Env):
         self.elements.append(self.flag)
 
         # Reset the Canvas 
-        self.canvas = np.ones(self.observation_shape) * 1
+        self.canvas = np.ones(self.env_shape) * 1
 
         # Draw elements on the canvas
         self.draw_elements_on_canvas(self.render_info, self.footer_info)
