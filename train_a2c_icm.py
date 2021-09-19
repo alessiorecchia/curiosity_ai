@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
 ############################## code for record an episode video ########################################################
         if HOST == TARGET_HOST and record_video:
-            size = env.observation_shape
+            size = env.env_shape
             fps = 120
             out = cv2.VideoWriter(f'video/{episode}_output.avi', cv2.VideoWriter_fourcc(*'X264'), fps, (size[0], size[1]))
 ############################## code for record an episode video ########################################################
@@ -195,8 +195,8 @@ if __name__ == '__main__':
                     FW Loss: {forward_pred_err.item()} \n \
                     Inv Loss: {inverse_pred_err.item()}')
         if episode % SAVE_INTERVAL == 0:
-                T.save(ac_model.state_dict(), f'models/ac_model_checkpoint_{i}')
-                T.save(icm.state_dict(), f'models/icm_checkpoint_{i}')
+                T.save(ac_model.state_dict(), f'models/ac_model_checkpoint_{episode}')
+                T.save(icm.state_dict(), f'models/icm_checkpoint_{episode}')
         
         env.reset()
     
