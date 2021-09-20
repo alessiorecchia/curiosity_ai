@@ -5,4 +5,4 @@ I worked on this project to learn Reinforcement Learning. I created a 'Catch the
 
 The AI agent is able to exlpore the gamefield, to find and catch the flag, and get it back to the base.
 
-<img src='https://github.com/alessiorecchia/curiosity_ai/blob/main/01.gif' width="270" height="270"> <img src='https://github.com/alessiorecchia/curiosity_ai/blob/main/02.gif' width="270" height="270"> <img src='https://github.com/alessiorecchia/curiosity_ai/blob/main/03.gif' width="270" height="270"> <img src='https://github.com/alessiorecchia/curiosity_ai/blob/main/04.gif' width="270" height="270">
+<img src='https://github.com/alessiorecchia/curiosity_ai/blob/main/01.gif' width="250" height="250"> <img src='https://github.com/alessiorecchia/curiosity_ai/blob/main/02.gif' width="250" height="250"> <img src='https://github.com/alessiorecchia/curiosity_ai/blob/main/03.gif' width="250" height="250"> <img src='https://github.com/alessiorecchia/curiosity_ai/blob/main/04.gif' width="250" height="250">
