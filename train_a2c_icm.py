@@ -45,6 +45,7 @@ except:
 HOST = gethostname()
 MODE = 'rgb_array' if HOST == TARGET_HOST else 'human'
 MODEL_PATH = 'models/'
+START_EPISODE = 0
 REC_INTERVAL = 10
 SAVE_INTERVAL = 10
 
