@@ -78,6 +78,7 @@ if params['load_last']:
     last = get_latest_checkpoint()
     ac_model.load_state_dict(T.load(MODEL_PATH + f'ac_model_checkpoint_{last}'))
     icm.load_state_dict(T.load(MODEL_PATH + f'icm_checkpoint_{last}'))
+    START_EPISODE = int(last)
     params['load_last'] = False
 
 ac_model.to(device)
@@ -88,7 +89,7 @@ scheduler = ExponentialLR(optimizer, 0.95)
 
 if __name__ == '__main__':
 
-    for episode in range(last, params['episodes']):
+    for episode in range(START_EPISODE, params['episodes']):
 
         episode_start = time()
         steps = 0
