@@ -1,5 +1,4 @@
 import os
-
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 import torch as T
@@ -7,7 +6,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
-import array
 import cv2
 
 from torch import optim
@@ -23,8 +21,6 @@ import logging
 import sys
 from socket import gethostname
 from glob import glob
-
-# print(mp.cpu_count())
 
 device = T.device("cuda" if T.cuda.is_available() else "cpu")
 
@@ -76,12 +72,13 @@ n_actions = env.action_space.n
 icm_in_shape = np.expand_dims(obs, axis=0).shape
 
 ac_model = ActorCritic(input_size=input_size, hidden_size=hidden_size, num_layers=n_actions, n_actions=n_actions)
-icm = ICM(icm_in_shape, n_actions, forward_scale=1., inverse_scale=1)
+icm = ICM(icm_in_shape, n_actions, forward_scale=1., inverse_scale=10)
 
 if params['load_last']:
     last = get_latest_checkpoint()
     ac_model.load_state_dict(T.load(MODEL_PATH + f'ac_model_checkpoint_{last}'))
     icm.load_state_dict(T.load(MODEL_PATH + f'icm_checkpoint_{last}'))
+    params['load_last'] = False
 
 ac_model.to(device)
 icm.to(device)
@@ -90,14 +87,13 @@ optimizer = optim.Adam(ac_model.parameters(), lr=3e-3)
 scheduler = ExponentialLR(optimizer, 0.95)
 
 if __name__ == '__main__':
-    for episode in range(params['episodes']):
+
+    for episode in range(last, params['episodes']):
 
         episode_start = time()
         steps = 0
         done = 0
         record_video = episode % REC_INTERVAL == 0
-        if params['load_last']:
-            params['load_last'] = False
 
 ############################## code for record an episode video ########################################################
         if HOST == TARGET_HOST and record_video:
@@ -123,7 +119,6 @@ if __name__ == '__main__':
                 log_prob = policy[action.item()]
                 log_probs.append(log_prob)
                 obs_next, e_reward, done, info = env.step(action.detach().item())
-                # obs_hat, action_hat = icm.forward(obs, action)
 
                 forward_pred_err, inverse_pred_err = icm.predict(action, obs, obs_next)
                 fw_pred_err.append(forward_pred_err)
@@ -132,7 +127,6 @@ if __name__ == '__main__':
                 reward_ = params['eta'] * forward_pred_err
                 reward = reward_.detach()
                 if params['use_extrinsic']:
-                    # e_reward = e_reward.to(device)
                     reward += e_reward
                 if done:
                     reward += 10
@@ -169,7 +163,6 @@ if __name__ == '__main__':
             critic_loss = T.pow(values - returns, 2)
             ac_loss = actor_loss.sum() + params['clc'] * critic_loss.sum()
 
-            # icm_loss = (1 - params['beta']) * inv_pred_errs + params['beta'] * fw_pred_errs
             icm_loss = (1 - params['beta']) * fw_pred_errs + params['beta'] * inv_pred_errs
             icm_loss = icm_loss.sum()/icm_loss.shape[0]
             loss = icm_loss + params['lambda_'] * ac_loss
@@ -196,6 +189,7 @@ if __name__ == '__main__':
                     AC Loss: {ac_loss.item()} \n \
                     FW Loss: {forward_pred_err.item()} \n \
                     Inv Loss: {inverse_pred_err.item()}')
+        
         if episode % SAVE_INTERVAL == 0:
                 T.save(ac_model.state_dict(), f'models/ac_model_checkpoint_{episode}')
                 T.save(icm.state_dict(), f'models/icm_checkpoint_{episode}')
