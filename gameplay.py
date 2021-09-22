@@ -57,7 +57,7 @@ class GameField(Env):
 
         lifes = 0
 
-        # Draw the agente, obstacles, Base and flag on canvas
+        # Draw the agent, obstacles, Base and flag on canvas
 
         for elem in self.elements:
 
@@ -94,7 +94,7 @@ class GameField(Env):
         # Reset the reward
         self.ep_return  = 0
 
-        # Reset elemnts
+        # Reset elements
         self.elements = []
 
         def assing_y(x, limit):
@@ -321,7 +321,6 @@ class GameField(Env):
         # Draw elements on the canvas
         self.draw_elements_on_canvas(self.render_info, self.footer_info)
 
-        # return self.canvas, reward, done, []
         return self.observation(), reward, done, info
 
 #################################### Test the env ####################################

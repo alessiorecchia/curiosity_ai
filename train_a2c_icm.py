@@ -26,8 +26,8 @@ device = T.device("cuda" if T.cuda.is_available() else "cpu")
 
 params = {
     'load_last': False,
-    'episodes': 500,
-    'n_steps': 10,
+    'episodes': 501,
+    'n_steps': 5,
     'clc': 0.1,
     'max_steps': 3000,
     'use_extrinsic' : True,

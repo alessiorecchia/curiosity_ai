@@ -18,8 +18,6 @@ class Feat_extr(nn.Module):
         in_size = self.get_input_size(self.get_input_size(self.get_input_size\
                          (self.get_input_size(self.img_dim, 5, 2, 2))))
         self.input_size = in_size**2 * 64
-        
-        # print('input size', self.input_size)
 
         self.enc_conv1 = nn.Conv2d(self.channels, 16, kernel_size=5, stride=2, padding=2)
         self.enc_conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1)
@@ -94,18 +92,13 @@ class ICM(nn.Module):
         self.fw_loss = self.fw_criterion(self.next_state_hat, self.enc_next_state.squeeze().detach()).sum()
         forward_pred_err = self.fw_scale * self.fw_loss
 
-        # oh_action = T.zeros(self.n_actions)
-        # oh_action_hat = T.zeros(self.n_actions).to(device)
-
-        # oh_action[action.item()] = 1
-        # oh_action_hat[self.action_hat.item()] = 1
-
-        # self.inv_loss = self.inv_criterion(oh_action_hat.unsqueeze(0), action.detach())#.flatten())#.unsqueeze(dim=1)
         self.inv_loss = self.inv_criterion(self.inv_probs.unsqueeze(0, ), action.detach())
         inverse_pred_err = self.inv_scale * self.inv_loss
         
         return forward_pred_err, inverse_pred_err
 
+
+######################################## Test the model ########################################
 # x = np.random.random(size=(3, 42, 42))
 # test = ICM(x.shape, 6)
 
@@ -117,3 +110,4 @@ class ICM(nn.Module):
 # obs_hat, action_hat = test(x, action)
 
 # print(obs_hat, action_hat)
+######################################## Test the model ########################################
