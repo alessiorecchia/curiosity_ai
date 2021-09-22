@@ -14,8 +14,6 @@ import socket
 font = cv2.FONT_HERSHEY_COMPLEX_SMALL
 
 N_OBS = 32
-# MIN_CONT_OBS = 2
-# MAX_CONT_OBS = 5
 D_MOVE = 3
 HOSTNAME = socket.gethostname()
 
@@ -45,7 +43,6 @@ class GameField(Env):
         self.elements = []
 
         # Permissible area of sam_fisher to be 
-        # self.y_min = int (self.env_shape[0] * 0.05)
         self.y_min = int ((self.env_shape[0] - 2 * self.pad) * 0.05 + self.pad)
         self.x_min = int ((self.env_shape[1] - 2 * self.pad) * 0.05 + self.pad)
         self.y_max = int ((self.env_shape[0] - 2 * self.pad) * 0.95 + self.pad)
@@ -60,14 +57,12 @@ class GameField(Env):
 
         lifes = 0
 
-        # Draw the sam_fisher, obstacles, Base and flag on canvas
+        # Draw the agente, obstacles, Base and flag on canvas
 
-        # test code 
-        ##############################################################################################################
         for elem in self.elements:
+
             x,y = elem.x, elem.y
-            # elem.icon = cv2.addWeighted(self.canvas[y: y + elem_shape[1], x:x + elem_shape[0]],0.4,elem.icon,0.1,0)
-            # self.canvas[y : y + elem_shape[1], x:x + elem_shape[0]] = elem.icon
+
             if type(elem).__name__ == 'Obstacle':
                 cv2.rectangle(self.canvas, (x-elem.dim//2, y-elem.dim//2), (x+elem.dim//2, y+elem.dim//2), elem.color, -1)
             
@@ -83,15 +78,13 @@ class GameField(Env):
             if type(elem).__name__ == 'Base':
                 cv2.circle(self.canvas,(x, y), elem.dim , elem.color, 4)
 
-            
-        ##############################################################################################################
         if render_info:
             text = 'Episode: {} | steps: {} | Action: {}'.format(render_info[0], render_info[1], render_info[2])
             self.canvas = cv2.putText(self.canvas, text, (10,20), font, 0.8, (255, 255, 255), 1, cv2.LINE_AA)
         
         if footer_info:
-            footer = f'FW Loss: {footer_info[0]:.2f} | Reward: {footer_info[1]:.2f} | Advantage'
-            self.canvas = cv2.putText(self.canvas, footer, (10,490), font, 0.8, (255, 255, 255), 1, cv2.LINE_AA)
+            footer = f'FW L: {footer_info[0]:.2f} | Act h: {footer_info[2]} | Rw: {footer_info[1]:.2f}'
+            self.canvas = cv2.putText(self.canvas, footer, (10, self.env_shape[0] - 10), font, 0.8, (255, 255, 255), 1, cv2.LINE_AA)
     
     def reset(self):
 
@@ -125,7 +118,7 @@ class GameField(Env):
             
 
 
-        # Determine a place to intialize the Base and SamFisher in
+        # Determine a place to intialize the Base and agent in
         base_not_initialized = True
 
         # x = random.randrange(self.x_min, self.x_max)
@@ -139,7 +132,7 @@ class GameField(Env):
         x_flag = self.x_max
         y_flag = (self.y_min + self.y_max) // 2
         
-        # Intialize the SamFisher, Base and Flag
+        # Intialize the Agent, Base and Flag
         self.base = Base("base", self.x_max, self.x_min, self.y_max, self.y_min)
         self.base.set_position(x,y)
         self.elements.append(self.base)
@@ -207,13 +200,6 @@ class GameField(Env):
         return False
 
 
-    # def good_direction(self, p):
-    #     gd = False
-    #     # flag_dist = np.sqrt((p.x - p.x)**2 + (p.y - f.y)**2)
-    #     if p.picked_flag == False:
-    #         gd = True
-    #     return gd
-    
     def wall_collision(self, elements):
 
         collision = False
@@ -222,7 +208,7 @@ class GameField(Env):
         for elem in elements:
             if isinstance(elem, Obstacle):
                 
-                # Sam tried to pass throgh a wall.
+                # Agent tried to pass throgh a wall.
                 if self.has_collided(self.player, elem):
                     collision = True
                     self.player.x = self.player.prev_x
@@ -234,20 +220,14 @@ class GameField(Env):
         pad = self.pad - 1
         screen = self.canvas
         screen = np.float32(screen)
-        # print(screen.shape)
         screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
-        # print(screen.shape)
         screen = screen[y-pad:y+pad, x-pad:x+pad]
         screen = cv2.resize(screen, (21, 21), interpolation=cv2.INTER_CUBIC)
-        # screen = screen.transpose((2, 0, 1))
         return screen / 255
 
     
     
     def step(self, action):
-
-        # self.player.flag_dist = self.get_dist(self.player, self.flag)
-        # self.player.base_dist = self.get_dist(self.player, self.base)
 
         self.player.prev_x = self.player.x
         self.player.prev_y = self.player.y
@@ -255,21 +235,12 @@ class GameField(Env):
         info = {}
 
 
-        # Flag that marks the termination of an episode
+        # marks the termination of an episode
         done = False
         reward = 0
         
         # Assert that it is a valid action 
         assert self.action_space.contains(action), "Invalid Action"
-        
-        # Reward for executing a step.
-
-        # changed to 0
-        # reward =  -1 # default reward if there is no flag pickup or drop
-
-
-        # apply the action to Sam Fisher {0: "Right", 1: "Left", 2: "Down", 3: "Up", 4: "Pickup flag", 5: "Drop flag"}
-        
 
         if action == 0:             # move right
             self.player.move(D_MOVE, 0)
@@ -330,8 +301,8 @@ class GameField(Env):
                     self.elements.remove(self.flag)
                     self.player.picked_flag = True
                     reward = 20
-            # else:
-            #     reward = -15
+            else:
+                reward = -15
                 
             # elif self.wall_collision(self.elements):
             #     reward = -10
@@ -342,13 +313,10 @@ class GameField(Env):
                     self.player.flag_dropped = True
                     done = True
                     reward = 30
-            # else:
-                # reward = -15
+            else:
+                reward = -15
             # elif self.wall_collision(self.elements):
             #     reward = -10
-
-
-
 
         # Draw elements on the canvas
         self.draw_elements_on_canvas(self.render_info, self.footer_info)
@@ -356,7 +324,7 @@ class GameField(Env):
         # return self.canvas, reward, done, []
         return self.observation(), reward, done, info
 
-
+#################################### Test the env ####################################
 # env = GameField()
 # print(env.x_min, env.x_max, env.y_min, env.y_max)
 # env.reset()
@@ -371,3 +339,4 @@ class GameField(Env):
 # # plt.imshow(env.elements[0].icon)
 # plt.show()
 # print(HOSTNAME)
+#################################### Test the env ####################################

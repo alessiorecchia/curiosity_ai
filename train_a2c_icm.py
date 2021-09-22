@@ -68,7 +68,7 @@ action_dict = env.get_action_meanings()
 obs = env.observation()
 
 input_size = np.prod(obs.shape)
-hidden_size = 128
+hidden_size = 256
 n_actions = env.action_space.n
 icm_in_shape = np.expand_dims(obs, axis=0).shape
 
@@ -173,7 +173,7 @@ if __name__ == '__main__':
 
             steps += 1
             if fw_pred_err:
-                env.footer_info = (forward_pred_err.item(), reward.item())
+                env.footer_info = (forward_pred_err.item(), reward.item(), action_dict[icm.action_hat.item()])
         
         if HOST == TARGET_HOST:
 

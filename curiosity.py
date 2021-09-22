@@ -7,9 +7,9 @@ from torch.autograd import Variable
 
 device = T.device("cuda" if T.cuda.is_available() else "cpu")
 
-class Base_Encoder(nn.Module):
+class Feat_extr(nn.Module):
     def __init__(self, in_dims):
-        super(Base_Encoder, self).__init__()
+        super(Feat_extr, self).__init__()
 
         # encoder def
         self.channels = in_dims[0]
@@ -58,7 +58,7 @@ class ICM(nn.Module):
         self.fw_criterion = nn.MSELoss(reduction='none')
         self.inv_criterion = nn.CrossEntropyLoss(reduction='none')
 
-        self.encoder = Base_Encoder(in_dims)
+        self.encoder = Feat_extr(in_dims)
 
         # forward model def
         self.fw_linear1 = nn.Linear(self.encoder.hidden_size + 1, 256)

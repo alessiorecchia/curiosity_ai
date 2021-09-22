@@ -20,7 +20,10 @@ class ActorCritic(nn.Module):
 
         # print('self.input_size', self.input_size)
         
-        self.rnn = nn.LSTM(input_size = self.input_size, hidden_size = self.hidden_size, num_layers=num_layers,
+        # self.rnn = nn.LSTM(input_size = self.input_size, hidden_size = self.hidden_size, num_layers=num_layers,
+        #                     batch_first = True,  dropout = 0)
+        
+        self.rnn = nn.GRU(input_size = self.input_size, hidden_size = self.hidden_size, num_layers=num_layers,
                             batch_first = True,  dropout = 0)
 
         self.fc1 = nn.Linear(self.hidden_size, 2 * self.hidden_size)
@@ -32,8 +35,9 @@ class ActorCritic(nn.Module):
     def forward(self, state):
         state = T.from_numpy(state).flatten().unsqueeze(0).unsqueeze(0).float().to(device)
         h0 = Variable(T.rand(self.num_layers, state.shape[0], self.hidden_size), requires_grad = True)
-        c0 = Variable(T.rand(self.num_layers, state.shape[0], self.hidden_size), requires_grad = True)
-        out, (hn, cn) = self.rnn(state.to(device), (h0.to(device), c0.to(device)))
+        # c0 = Variable(T.rand(self.num_layers, state.shape[0], self.hidden_size), requires_grad = True)
+        # out, (hn, cn) = self.rnn(state.to(device), (h0.to(device), c0.to(device)))
+        out, hn = self.rnn(state.to(device), h0.to(device))
 
         hidden_out = hn#[-1]
 
@@ -53,12 +57,12 @@ class ActorCritic(nn.Module):
         return index, scores, val
 
 
-# test = ActorCritic(3*60*60, 256, 6, 6)
+test = ActorCritic(3*60*60, 256, 6, 6)
 
-# test.to(device)
+test.to(device)
 
-# x = np.random.random(size=3*60*60)
+x = np.random.random(size=3*60*60)
 
-# index, scores, val = test(x)
+index, scores, val = test(x)
 
-# print(index, scores, val)
+print(index, scores, val)
